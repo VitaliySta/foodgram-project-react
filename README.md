@@ -1,6 +1,5 @@
 # Проект Foodgram - «Продуктовый помощник»
 ![Build Status](https://github.com/VitaliySta/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
-</p>
 
 ### Описание:
 Сервис, который позволяет создавать/просматривать рецепты блюд, 
@@ -23,7 +22,39 @@
 - **deploy:** Автоматический деплой на боевой сервер при пуше в главную ветку main.
 - **send_massage:** Отправка уведомления в телеграм-чат.
 
-### Подготовка и запуск проекта
+### Подготовка и запуск проекта локально
+У вас должен быть установлен Docker
+- Клонировать проект с помощью git clone или скачать ZIP-архив.
+- Создать env-файл
+```bash
+cp .env.example .env
+```
+- Перейти в репозиторий для запуска докера
+```bash
+cd infra/
+```
+- Запустить docker-compose
+```bash
+sudo docker-compose up -d --build
+```
+- Выполнить миграции
+```bash
+sudo docker-compose exec backend python manage.py migrate
+```
+- Подгрузить статику
+```bash
+sudo docker-compose exec backend python manage.py collectstatic --no-input 
+```
+- Для создания суперпользователя выполните
+```bash
+sudo docker-compose exec backend python manage.py createsuperuser
+```
+- Загрузить подготовленный список ингредиентов
+```bash
+sudo docker-compose exec backend python manage.py loaddata ingredients.json
+```
+
+### Подготовка и запуск проекта на сервере
 У вас должен быть установлен Docker и вы должны быть зарегистрированы на [DockerHub](https://hub.docker.com/)
 - Клонировать проект с помощью git clone или скачать ZIP-архив.
 - Перейти в папку \foodgram-project-react\backend и выполнить команды:
@@ -38,7 +69,7 @@ sudo docker build -t <логин на DockerHub>/<название образа 
 sudo docker login
 sudo docker push <логин на DockerHub>/<название образа для фронтэнда, которое написали> 
 ```
-- Изменить файл \foodgram-project-react\infra\docker-compose.yml:
+- Изменить файл \foodgram-project-react\infra\deploy\docker-compose.yml:
 ```
 backend:
   image: <логин на DockerHub>/<название образа для бэкенда, которое написали>
@@ -66,7 +97,7 @@ sudo apt install docker.io
 sudo apt-get update
 sudo apt install docker-compose
 ```
-- Скопировать файл docker-compose.yml и nginx.conf из директории infra на сервер:
+- Скопировать файл docker-compose.yml и nginx.conf из директории infra\deploy на сервер:
 ```bash
 scp docker-compose.yml <username>@<host>:/home/<username>/
 scp nginx.conf <username>@<host>:/home/<username>/
@@ -91,16 +122,6 @@ SSH_KEY=<ваш SSH ключ (для получения команда: cat ~/.s
 TELEGRAM_TO=<ID своего телеграм-аккаунта>
 TELEGRAM_TOKEN=<токен вашего бота>
 ```
-- В проекте установлены значения по умолчанию для переменных окружения:
-```
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-```
-
 - После деплоя изменений в git, дождитесь выполнения всех Actions.
 - Зайдите на боевой сервер и выполните команды:
   * Создаем и применяем миграции
@@ -123,7 +144,7 @@ DB_PORT=5432
 - Проект будет доступен по вашему IP-адресу.
 
 #### REST API
-Подробная документация API будет доступна по адресу - http:///api/docs/
+Подробная документация API будет доступна по адресу - http://IP-адрес/api/docs/
 
 #### Автор:
 Стацюк Виталий - [https://github.com/VitaliySta](https://github.com/VitaliySta)

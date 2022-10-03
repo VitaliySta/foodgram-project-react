@@ -127,30 +127,34 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'tags': 'Тег обязателен для заполнения!'
             })
-        tags_list = []
+        tags_set = set()
         for tag in tags:
-            if tag in tags_list:
+            if tag in tags_set:
                 raise serializers.ValidationError({
-                    'tags': 'Такой тег существует, измените тег!'
+                    'tags': f'Тег {tag} существует, измените тег!'
                 })
-            tags_list.append(tag)
+            tags_set.add(tag)
         ingredients = data['ingredients']
-        ingredients_list = []
+        ingredients_set = set()
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': 'Ингредиенты обязателены для заполнения!'
+            })
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
-            if ingredient_id in ingredients_list:
+            if ingredient_id in ingredients_set:
                 raise serializers.ValidationError({
-                    'ingredients': 'Такой ингредиент существует,'
+                    'ingredients': f'Ингредиент {ingredient} существует,'
                                    ' измените ингредиент!'
                 })
-            ingredients_list.append(ingredient_id)
+            ingredients_set.add(ingredient_id)
             amount = ingredient['amount']
-            if int(amount) <= 0:
+            if int(amount) < 1:
                 raise serializers.ValidationError({
                     'amount': 'Количество должно быть больше 0!'
                 })
         cooking_time = data['cooking_time']
-        if int(cooking_time) <= 0:
+        if int(cooking_time) < 1:
             raise serializers.ValidationError({
                 'cooking_time': 'Время приготовления должно быть больше 0!'
             })

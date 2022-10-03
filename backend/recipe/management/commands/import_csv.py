@@ -5,7 +5,8 @@ from django.core.management.base import BaseCommand
 from foodgram.settings import BASE_DIR
 from recipe.models import Ingredient
 
-PROJECT_DIR = Path(BASE_DIR).resolve().parent
+PROJECT_DIR = Path(BASE_DIR).resolve().parent.joinpath('data')
+FILE_TO_OPEN = PROJECT_DIR / "ingredients.csv"
 
 
 class Command(BaseCommand):
@@ -13,7 +14,7 @@ class Command(BaseCommand):
 
     def handle(self, **kwargs):
         with open(
-            f"{PROJECT_DIR}\\data\\ingredients.csv", "r", encoding="UTF-8"
+            FILE_TO_OPEN, "r", encoding="UTF-8"
         ) as file:
             reader = csv.reader(file, delimiter=",")
             for row in reader:
