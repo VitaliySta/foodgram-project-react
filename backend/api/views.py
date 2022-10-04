@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -150,22 +152,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def download_shopping_cart(self, user):
-        shopping_list = {}
         ingredients = IngredientRecipe.objects.filter(
             recipe__shop_list__user=user.user
         )
-        for ingredient in ingredients:
-            name = ingredient.ingredient.name
-            measurement_unit = ingredient.ingredient.measurement_unit
-            amount = ingredient.amount
-            if name not in shopping_list:
-                shopping_list[name] = {'measurement_unit': measurement_unit,
-                                       'amount': amount}
-            else:
-                shopping_list[name]['amount'] += amount
+        compressed_ingredients = Counter()
+        for ing in ingredients:
+            compressed_ingredients[
+                (ing.ingredient.name, ing.ingredient.measurement_unit)
+            ] += ing.amount
         shopping_cart = ([
-            f"- {item}: {value['amount']} {value['measurement_unit']}\n"
-            for item, value in shopping_list.items()
+            f"- {name}: {amount} {measurement_unit}\n"
+            for (name, measurement_unit), amount
+            in compressed_ingredients.items()
         ])
         filename = 'shopping-list.txt'
         response = HttpResponse(shopping_cart, content_type='text/plain')

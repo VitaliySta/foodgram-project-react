@@ -1,6 +1,7 @@
 # Проект Foodgram - «Продуктовый помощник»
 ![Build Status](https://github.com/VitaliySta/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 
+Cайт - foodgm.ddns.net (логин и пароль - admin)
 ### Описание:
 Сервис, который позволяет создавать/просматривать рецепты блюд, 
 подписываться на авторов, добавлять рецепты в избранное и в список покупок. 

@@ -3,13 +3,14 @@ from django.contrib import admin
 from .models import (Favorite, Follow, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 
+admin.site.empty_value_display = 'Значение отсутствует'
+
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     """Класс настройки раздела тегов"""
 
     list_display = ('pk', 'name', 'slug')
-    empty_value_display = 'Значение отсутствует'
 
 
 @admin.register(Ingredient)
@@ -18,7 +19,6 @@ class IngredientAdmin(admin.ModelAdmin):
 
     list_display = ('pk', 'name', 'measurement_unit')
     search_fields = ('name',)
-    empty_value_display = 'Значение отсутствует'
 
 
 class IngredientRecipeInline(admin.TabularInline):
@@ -40,7 +40,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('author', 'name', 'tags')
     search_fields = ('name',)
     inlines = (IngredientRecipeInline,)
-    empty_value_display = 'Значение отсутствует'
 
     def get_favorites(self, obj):
         return obj.favorites.count()
@@ -62,7 +61,6 @@ class FollowAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'author')
     search_fields = ('user', 'author')
     list_filter = ('user', 'author')
-    empty_value_display = 'Значение отсутствует'
 
 
 @admin.register(Favorite)
@@ -70,7 +68,6 @@ class FavoriteAdmin(admin.ModelAdmin):
     """Класс настройки раздела избранное"""
 
     list_display = ('pk', 'user', 'recipe')
-    empty_value_display = 'Значение отсутствует'
 
 
 @admin.register(IngredientRecipe)
@@ -78,10 +75,8 @@ class IngredientRecipeAdmin(admin.ModelAdmin):
     """Класс настройки соответствия ингредиентов и рецепта"""
 
     list_display = ('pk', 'ingredient', 'recipe', 'amount')
-    empty_value_display = 'Значение отсутствует'
 
 
 @admin.register(ShoppingList)
 class ShoppingListAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'recipe')
-    empty_value_display = 'Значение отсутствует'
