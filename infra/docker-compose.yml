@@ -9,12 +9,9 @@ services:
       - ./.env
 
   backend:
-    build:
-      context: ../backend/
-      dockerfile: Dockerfile
+    image: vitaliystn/foodgram_backend:latest
     restart: always
     volumes:
-      - ../backend/:/app/
       - static:/app/static/
       - media:/app/media/
     depends_on:
@@ -23,9 +20,7 @@ services:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: vitaliystn/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
 
