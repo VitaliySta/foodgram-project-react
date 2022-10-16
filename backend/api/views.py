@@ -1,5 +1,3 @@
-from collections import Counter
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,7 +15,6 @@ from recipe.models import (
     Favorite,
     Follow,
     Ingredient,
-    IngredientRecipe,
     Recipe,
     ShoppingList,
     Tag
@@ -36,6 +33,7 @@ from .serializers import (
     ShoppingListSerializer,
     TagSerializer
 )
+from .utils import get_shopping_cart
 
 
 class CustomUserViewSet(UserViewSet):
@@ -169,19 +167,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def download_shopping_cart(self, user):
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__shop_list__user=user.user
-        )
-        compressed_ingredients = Counter()
-        for ing in ingredients:
-            compressed_ingredients[
-                (ing.ingredient.name, ing.ingredient.measurement_unit)
-            ] += ing.amount
-        shopping_cart = ([
-            f"- {name}: {amount} {measurement_unit}\n"
-            for (name, measurement_unit), amount
-            in compressed_ingredients.items()
-        ])
+        shopping_cart = get_shopping_cart(user)
         filename = 'shopping-list.txt'
         response = HttpResponse(shopping_cart, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
