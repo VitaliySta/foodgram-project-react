@@ -147,6 +147,11 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_favorite'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} {self.recipe}'
@@ -201,6 +206,11 @@ class ShoppingList(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_shoppingList'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} {self.recipe}'
