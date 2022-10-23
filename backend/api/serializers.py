@@ -90,17 +90,17 @@ class RecipeSerializer(serializers.ModelSerializer):
         return IngredientRecipeSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return self._obj_exists(obj, Favorite)
 
     def get_is_in_shopping_cart(self, obj):
+        return self._obj_exists(obj, ShoppingList)
+
+    def _obj_exists(self, recipe, name_class):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
-        return ShoppingList.objects.filter(user=request.user,
-                                           recipe=obj,).exists()
+        return name_class.objects.filter(user=request.user,
+                                         recipe=recipe).exists()
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
@@ -169,11 +169,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return data
 
     def add_ingredients(self, ingredients, recipe):
-        IngredientRecipe.objects.bulk_create([IngredientRecipe(
+        new_ingredients = [IngredientRecipe(
             recipe=recipe,
             ingredient=ingredient['id'],
             amount=ingredient['amount'],
-        ) for ingredient in ingredients])
+        ) for ingredient in ingredients]
+        IngredientRecipe.objects.bulk_create(new_ingredients)
 
     def add_tags(self, tags, recipe):
         for tag in tags:
@@ -189,9 +190,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return RecipeSerializer(instance, context=context).data
+        return representation(self.context, instance, RecipeSerializer)
 
     def update(self, recipe, validated_data):
         recipe.tags.clear()
@@ -244,9 +243,10 @@ class FavoriteSerializer(RecipeShortSerializer):
         fields = ('user', 'recipe')
 
     def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return RecipeShortSerializer(instance.recipe, context=context).data
+        return representation(
+            self.context,
+            instance.recipe,
+            RecipeShortSerializer)
 
 
 class ShoppingListSerializer(RecipeShortSerializer):
@@ -257,6 +257,15 @@ class ShoppingListSerializer(RecipeShortSerializer):
         fields = ('user', 'recipe')
 
     def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return RecipeShortSerializer(instance.recipe, context=context).data
+        return representation(
+            self.context,
+            instance.recipe,
+            RecipeShortSerializer)
+
+
+def representation(context, instance, serializer):
+    """Функция для использования в to_representation"""
+
+    request = context.get('request')
+    new_context = {'request': request}
+    return serializer(instance, context=new_context).data

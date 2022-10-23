@@ -48,7 +48,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated, )
     )
     def subscriptions(self, request):
-        queryset = User.objects.filter(follow__user=self.request.user)
+        queryset = User.objects.filter(follow__user=request.user)
         if queryset:
             pages = self.paginate_queryset(queryset)
             serializer = FollowSerializer(pages, many=True,
@@ -140,16 +140,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         object.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def _create_or_destroy(self, http_method, recipe, key,
+                           model, serializer):
+        if http_method == 'POST':
+            return self.create_object(request=recipe, pk=key,
+                                      serializers=serializer)
+        return self.delete_object(request=recipe, pk=key, model=model)
+
     @action(
         detail=True,
         methods=('post', 'delete'),
         permission_classes=(IsAuthenticated,),
     )
     def favorite(self, request, pk):
-        if request.method == 'POST':
-            return self.create_object(request=request, pk=pk,
-                                      serializers=FavoriteSerializer)
-        return self.delete_object(request=request, pk=pk, model=Favorite)
+        return self._create_or_destroy(
+            request.method, request, pk, Favorite, FavoriteSerializer
+        )
 
     @action(
         detail=True,
@@ -157,10 +163,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            return self.create_object(request=request, pk=pk,
-                                      serializers=ShoppingListSerializer)
-        return self.delete_object(request=request, pk=pk, model=ShoppingList)
+        return self._create_or_destroy(
+            request.method, request, pk, ShoppingList, ShoppingListSerializer
+        )
 
     @action(
         detail=False,

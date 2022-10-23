@@ -2,6 +2,9 @@ from django_filters.rest_framework import FilterSet, filters
 
 from recipe.models import Ingredient, Recipe, Tag
 
+FILTER_USER = {'favorites': 'favorites__user',
+               'shop_list': 'shop_list__user'}
+
 
 class IngredientSearchFilter(FilterSet):
     """Поиск по названию ингредиента."""
@@ -29,12 +32,13 @@ class RecipeFilter(FilterSet):
         model = Recipe
         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
 
-    def filter_is_favorited(self, queryset, name, value):
+    def _get_queryset(self, queryset, name, value, model):
         if value:
-            return queryset.filter(favorites__user=self.request.user)
+            return queryset.filter(**{FILTER_USER[model]: self.request.user})
         return queryset
 
+    def filter_is_favorited(self, queryset, name, value):
+        return self._get_queryset(queryset, name, value, 'favorites')
+
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        if value:
-            return queryset.filter(shop_list__user=self.request.user)
-        return queryset
+        return self._get_queryset(queryset, name, value, 'shop_list')
